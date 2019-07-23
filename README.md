@@ -1,4 +1,4 @@
-# CCDebugging
+# Azure CycleCloud Cluster Debugging
 
 This project is intended as a tutorial on debugging and operating Azure CycleCloud clusters.
 The default software configuration contains intentional errors and missing functionality that will be patched
