@@ -41,7 +41,7 @@ We're going to start by cloning the project from GitHub:
   mkdir -p ~/tutorial
   cd ~/tutorial
   git clone https://github.com/bwatrous/ccdebugging.git
-
+```
 
 Next, let's deploy the current project to your Azure CycleCloud locker (referred to as "azure-storage" for the rest of
 this tutorial):
@@ -49,7 +49,7 @@ this tutorial):
 ``` bash
   cd ~/tutorial/ccdebugging
   cyclecloud project upload azure-storage
-
+```
 
 Assuming that CycleCloud is running and reachable, the upload should report 100% completed.
 
@@ -59,13 +59,15 @@ Assuming that CycleCloud is running and reachable, the upload should report 100%
   **IMPORTANT**
   - Before starting the cluster at the end of this section, verify that you have added your SSH public key to your
     CycleCloud user's Profile.
-    
+```
+
 
 Next, let's import the tutorial cluster template to CycleCloud as a new cluster type:
 
 ``` bash
   cd ~/tutorial/ccdebugging
   cyclecloud import_template CCDebugging -f ./templates/ccdebugging.txt
+```
 
 
 Finally, let's create a cluster using the new cluster creation icon we just created:
@@ -105,7 +107,7 @@ Connect to the cluster using SSH or using the CycleCloud CLI's "connect" command
   Version: 7.8.0
   Run List: recipe[cyclecloud], recipe[anaconda], role[pbspro_master_role], recipe[cluster_init]
   [admin@ip-0A800009 ~]$ 
-
+```
 
 The first place to look when debugging a CycleCloud cluster is the `chef-client.log` in  Jetpack logs directory.  Use the `tail -f ./chef-client.log` to follow the converge process, or simply open the file in `less` and search for "**ERROR**":
 
@@ -113,7 +115,7 @@ The first place to look when debugging a CycleCloud cluster is the `chef-client.
   [admin@ip-0A800009 ~]$ sudo -i
   [root@ip-0A800009 ~]# cd /opt/cycle/jetpack/logs/
   [root@ip-0A800009 logs]# tail -f chef-client.log
-
+```
 
 At the end of the log, you should see something like this:
 
@@ -125,7 +127,7 @@ At the end of the log, you should see something like this:
   [2019-07-23T07:31:20+00:00] FATAL: Please provide the contents of the stacktrace.out file if you file a bug report
   [2019-07-23T07:31:20+00:00] ERROR: Chef::Exceptions::MultipleFailures
   [2019-07-23T07:31:20+00:00] FATAL: Chef::Exceptions::ChildConvergeError: Chef run process exited unsuccessfully (exit code 1)
-
+```
 
 That error message wasn't super helpful.  But...   It did tell you where to go next: 
 **FATAL: Stacktrace dumped to /opt/cycle/jetpack/system/chef/cache/chef-stacktrace.out**
@@ -144,7 +146,7 @@ a section like this:
   **Executing cluster-init script: /mnt/cluster-init/ccdebugging/default/scripts/010_create_conda_env.sh, output written to /opt/cycle/jetpack/logs/cluster-init/ccdebugging/default/scripts/010_create_conda_env.sh.out**
   **Failed to execute cluster-init script '/mnt/cluster-init/ccdebugging/default/scripts/010_create_conda_env.sh' (1)**
   Error:
-
+```
 
 Surprisingly, it looks like one of the cluster-init scripts from our intentionally broken projects has failed:
 **Failed to execute cluster-init script '/mnt/cluster-init/ccdebugging/default/scripts/010_create_conda_env.sh' (1)**
@@ -169,7 +171,7 @@ If you open the cluster-init log: `/opt/cycle/jetpack/logs/cluster-init/ccdebugg
   You will need to adjust your conda configuration to proceed.
   Use `conda config --show channels` to view your configuration's current state,
   and use `conda config --show-sources` to view config file locations.
-
+```
 
 The Conda channel "idontexist" is not acccessible or invalid.
 
@@ -193,6 +195,7 @@ Save the modified script, and re-upload the project:
   cd ~/tutorial/ccdebugging
   vi specs/default/cluster-init/scripts/010_create_conda_env.sh
   cyclecloud project upload azure-storage
+```
 
 
 Now, re-connect to the master node and tail the `chef-client.log` again:
@@ -201,6 +204,7 @@ Now, re-connect to the master node and tail the `chef-client.log` again:
   [admin@ip-0A800009 ~]$ sudo -i
   [root@ip-0A800009 ~]# cd /opt/cycle/jetpack/logs/
   [root@ip-0A800009 logs]# tail -f chef-client.log
+```
 
 
 It may take a few minutes...   And then you'll see the converge fail again.
@@ -216,6 +220,8 @@ Let's try removing the bad channel:
     - bioconda
     - r
   [root@ip-0A800009 logs]# conda config --remove idontexist
+```
+
 
 Now tail the `chef-client.log` again.  This time, you should see the converge end with the line:
 ** INFO: Report handlers complete **
@@ -239,6 +245,7 @@ and restart or create a new cluster, the change has already been applied.
   - Generally, cluster policy changes such as MaxCoreCount, and purely additive changes to software configuration (that do not require cluster template/parameter changes) may be made without restart.
   - Software configuration changes to running VMs generally require manual intervention to apply the change live, or a node terminate and restart.
   - Changes to the VM infrastructure generally require a node or cluster terminate and restart.
+```
 
 
 First, let's make sure that opening the port works on the running cluster.
@@ -262,13 +269,14 @@ First, add the following to the `[[node master]]` section of `./templates/ccdebu
         [[[input-endpoint dask]]]
         PrivatePort = 8787
         PublicPort = 8787
+```
 
 
 Next, re-import the cluster template to apply the change to the cluster creation UI:
 
 ``` bash
   cyclecloud import_template CCDebugging -f ./templates/ccdebugging.txt --force
-
+```
 
 (Note: that we need to add `--force` to over-write the existing creation form.)
 
@@ -284,7 +292,7 @@ To do that:
     cyclecloud export_parameters ccdebuggingTest > ccdebuggingTest.json
     vi ./templates/ccdebugging.txt
     cyclecloud import_cluster ccdebuggingTest -c CCDebugging -f ./templates/ccdebugging.txt -p ccdebuggingTest.json --force
-
+```
 
 
 
