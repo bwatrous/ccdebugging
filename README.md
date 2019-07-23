@@ -298,8 +298,46 @@ To do that:
 
 ### Bonus: Let's add a unit test!
 
+Create a new file at: `specs/default/cluster-init/tests/test_dask.py` with content:
+
+``` python
+  #!/opt/cycle/jetpack/system/embedded/bin/python -m pytest
+  # Copyright (c) Microsoft Corporation. All rights reserved.
+  # Licensed under the MIT License.
+  #
+
+  import os
+  import subprocess
+  import tempfile
+  import time
+  import uuid
 
 
+  def test_dask():
+      script_path = os.path.expanduser("~/test_dask.sh")
+      with open(script_path, 'w') as fw:
+	  fw.write(
+  """#!/bin/bash
+  source /etc/profile.d/anaconda-env.sh
+  source activate dask
 
+  python -c 'import dask; print("Dask Version: %s" % dask.__version__)'
+  """)
 
+      stdout = subprocess.check_output(["bash", script_path])
+      if "Dask Version" not in stdout:
+	  raise AssertionError("Failed to load Dask environment: %s" % stdout)
+      print "success"
+      return
+
+```
+
+Then re-upload the project.
+
+Finally, re-connect to the master and run the tests manually:
+
+``` bash
+  [admin@ip-0A800009 ~]$ sudo -i
+  [root@ip-0A800009 ~]# jetpack test
+```
 
