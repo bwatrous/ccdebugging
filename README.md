@@ -227,6 +227,31 @@ Now tail the `chef-client.log` again.  This time, you should see the converge en
 ** INFO: Report handlers complete **
 
 
+``` bash
+  **NOTE**
+  If you want to debug your script changes in place on the node before uploading them to blob storage, here's a
+  useful trick.
+
+  1. Turn off the automatic re-converge:
+  
+     [admin@ip-0A800009 ~]$ sudo -i
+     [root@ip-0A800009 ~]# crontab -e
+     # Comment out all crontab lines
+
+  2. Make your modifications locally on the node:
+  
+     # Your chef cookbooks are here:
+     /opt/cycle/jetpack/system/chef/chef-repo/cookbooks/
+     # Your cluster-init scripts are here (replace ccdebugging with your project name):
+     /mnt/cluster-init/ccdebugging/default/scripts/
+
+  3. To test changes, re-converge with cluster-init sync disabled:
+  
+     jetpack converge --no-sync --debug
+
+  4. **IMPORTANT** : Remember to copy your changes back to your local project and upload so they apply to future
+     nodes.
+```
 
 
 ### Opening access to the Dask UI
