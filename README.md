@@ -219,7 +219,7 @@ Let's try removing the bad channel:
     - idontexist
     - bioconda
     - r
-  [root@ip-0A800009 logs]# conda config --remove idontexist
+  [root@ip-0A800009 logs]# conda config --remove channels idontexist
 ```
 
 
